@@ -1,25 +1,11 @@
 
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from "@/components/ui/table";
-import { 
-  Users, 
-  UserPlus, 
-  Search, 
-  UserCheck, 
-  UserX, 
-  Filter 
-} from 'lucide-react';
+import { UserPlus } from 'lucide-react';
+import TeamFilters from '../components/teams/TeamFilters';
+import TeamStats from '../components/teams/TeamStats';
+import TeamTable from '../components/teams/TeamTable';
 
 const Teams = () => {
   const [filter, setFilter] = useState('all');
@@ -93,34 +79,6 @@ const Teams = () => {
         if (filter === 'inactive') return team.status === 'inativo';
         return true;
       });
-  
-  // Função para gerar o badge do status da equipe
-  const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'ativo':
-        return <Badge className="bg-green-500">Ativo</Badge>;
-      case 'inativo':
-        return <Badge variant="secondary" className="bg-gray-500">Inativo</Badge>;
-      default:
-        return null;
-    }
-  };
-  
-  // Função para gerar o badge do tipo de equipe
-  const getTypeBadge = (type: string) => {
-    switch(type) {
-      case 'roçagem':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">Roçagem</Badge>;
-      case 'acabamento':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">Acabamento</Badge>;
-      case 'coleta':
-        return <Badge variant="outline" className="bg-purple-100 text-purple-800 border-purple-300">Coleta</Badge>;
-      case 'giro-zero':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">Giro Zero</Badge>;
-      default:
-        return null;
-    }
-  };
 
   return (
     <>
@@ -139,149 +97,13 @@ const Teams = () => {
         </div>
         
         {/* Filtros */}
-        <div className="mb-6 flex flex-wrap gap-2">
-          <Button 
-            variant={filter === 'all' ? "default" : "outline"} 
-            size="sm" 
-            onClick={() => setFilter('all')}
-          >
-            <Users className="h-4 w-4 mr-2" />
-            Todas
-          </Button>
-          <Button 
-            variant={filter === 'lote1' ? "default" : "outline"} 
-            size="sm" 
-            onClick={() => setFilter('lote1')}
-            className={filter === 'lote1' ? "bg-green-600" : ""}
-          >
-            Lote 1
-          </Button>
-          <Button 
-            variant={filter === 'lote2' ? "default" : "outline"} 
-            size="sm" 
-            onClick={() => setFilter('lote2')}
-            className={filter === 'lote2' ? "bg-blue-600" : ""}
-          >
-            Lote 2
-          </Button>
-          <Button 
-            variant={filter === 'active' ? "default" : "outline"} 
-            size="sm" 
-            onClick={() => setFilter('active')}
-          >
-            <UserCheck className="h-4 w-4 mr-2" />
-            Ativas
-          </Button>
-          <Button 
-            variant={filter === 'inactive' ? "default" : "outline"} 
-            size="sm" 
-            onClick={() => setFilter('inactive')}
-          >
-            <UserX className="h-4 w-4 mr-2" />
-            Inativas
-          </Button>
-        </div>
+        <TeamFilters filter={filter} setFilter={setFilter} />
         
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Total de Equipes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{teams.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Equipes Ativas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{teams.filter(t => t.status === 'ativo').length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Lote 1 (Norte)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{teams.filter(t => t.lote === 1).length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm text-muted-foreground">Lote 2 (Sul)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{teams.filter(t => t.lote === 2).length}</div>
-            </CardContent>
-          </Card>
-        </div>
+        <TeamStats teams={teams} />
         
         {/* Tabela de equipes */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex justify-between items-center">
-              <CardTitle>Equipes</CardTitle>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <input
-                  type="search"
-                  placeholder="Buscar equipe..."
-                  className="pl-8 h-9 w-[200px] rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Equipe</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Responsável</TableHead>
-                    <TableHead className="text-center">Membros</TableHead>
-                    <TableHead>Área Atual</TableHead>
-                    <TableHead className="text-center">Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredTeams.length > 0 ? (
-                    filteredTeams.map((team) => (
-                      <TableRow key={team.id}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center">
-                            <span className={`w-2 h-2 rounded-full mr-2 ${team.lote === 1 ? 'bg-green-500' : 'bg-blue-500'}`}></span>
-                            {team.name}
-                          </div>
-                        </TableCell>
-                        <TableCell>{getTypeBadge(team.type)}</TableCell>
-                        <TableCell>{team.manager}</TableCell>
-                        <TableCell className="text-center">{team.members}</TableCell>
-                        <TableCell>{team.currentArea}</TableCell>
-                        <TableCell className="text-center">{getStatusBadge(team.status)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm">Detalhes</Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
-                        Nenhuma equipe encontrada.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <TeamTable teams={filteredTeams} />
       </div>
     </>
   );
