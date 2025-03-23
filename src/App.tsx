@@ -10,6 +10,9 @@ import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import Reports from "./pages/Reports";
 import Teams from "./pages/Teams";
+import Areas from "./pages/Areas";
+import Coordinators from "./pages/Coordinators";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +35,9 @@ const App = () => (
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/reports" element={<Reports />} />
             <Route path="/teams" element={<Teams />} />
+            <Route path="/areas" element={<Areas />} />
+            <Route path="/coordinators" element={<Coordinators />} />
+            <Route path="/users" element={<Users />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
