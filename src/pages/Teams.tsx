@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Button } from "@/components/ui/button";
 import { UserPlus } from 'lucide-react';
@@ -9,6 +9,7 @@ import TeamTable from '../components/teams/TeamTable';
 
 const Teams = () => {
   const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Dados de exemplo para as equipes
   const teams = [
@@ -69,16 +70,26 @@ const Teams = () => {
     },
   ];
   
-  // Filtrar as equipes com base no filtro selecionado
-  const filteredTeams = filter === 'all' 
-    ? teams 
-    : teams.filter(team => {
-        if (filter === 'lote1') return team.lote === 1;
-        if (filter === 'lote2') return team.lote === 2;
-        if (filter === 'active') return team.status === 'ativo';
-        if (filter === 'inactive') return team.status === 'inativo';
-        return true;
-      });
+  // Filtrar as equipes com base no filtro selecionado e no termo de busca
+  const filteredTeams = useMemo(() => {
+    return teams.filter(team => {
+      // Filtragem por categoria (lote, status)
+      const matchesFilter = 
+        filter === 'all' || 
+        (filter === 'lote1' && team.lote === 1) ||
+        (filter === 'lote2' && team.lote === 2) ||
+        (filter === 'active' && team.status === 'ativo') ||
+        (filter === 'inactive' && team.status === 'inativo');
+      
+      // Filtragem por termo de busca (case insensitive)
+      const matchesSearch = 
+        searchTerm === '' || 
+        team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        team.manager.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return matchesFilter && matchesSearch;
+    });
+  }, [filter, searchTerm, teams]);
 
   return (
     <>
@@ -103,7 +114,11 @@ const Teams = () => {
         <TeamStats teams={teams} />
         
         {/* Tabela de equipes */}
-        <TeamTable teams={filteredTeams} />
+        <TeamTable 
+          teams={filteredTeams} 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+        />
       </div>
     </>
   );

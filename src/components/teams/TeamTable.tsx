@@ -12,6 +12,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Search } from 'lucide-react';
 import { getStatusBadge, getTypeBadge } from './TeamBadges';
+import { Input } from "@/components/ui/input";
 
 interface Team {
   id: number;
@@ -27,9 +28,11 @@ interface Team {
 
 interface TeamTableProps {
   teams: Team[];
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
 }
 
-const TeamTable: React.FC<TeamTableProps> = ({ teams }) => {
+const TeamTable: React.FC<TeamTableProps> = ({ teams, searchTerm, onSearchChange }) => {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -37,10 +40,12 @@ const TeamTable: React.FC<TeamTableProps> = ({ teams }) => {
           <CardTitle>Equipes</CardTitle>
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <input
+            <Input
               type="search"
               placeholder="Buscar equipe..."
-              className="pl-8 h-9 w-[200px] rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              className="pl-8 h-9 w-[250px] rounded-md"
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
         </div>
