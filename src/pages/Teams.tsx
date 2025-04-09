@@ -1,18 +1,14 @@
-
 import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { Button } from "@/components/ui/button";
 import { UserPlus } from 'lucide-react';
-import TeamFilters from '../components/teams/TeamFilters';
-import TeamStats from '../components/teams/TeamStats';
-import TeamTable from '../components/teams/TeamTable';
+import { Button } from "@/components/ui/button";
+import { ExcelUploader } from '@/components/ExcelUploader';
+import TeamTable from '@/components/teams/TeamTable';
+import TeamStats from '@/components/teams/TeamStats';
+import TeamFilters from '@/components/teams/TeamFilters';
 
 const Teams = () => {
-  const [filter, setFilter] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Dados de exemplo para as equipes
-  const teams = [
+  const [teams, setTeams] = useState([
     {
       id: 1,
       name: 'Equipe A1',
@@ -68,12 +64,13 @@ const Teams = () => {
       lastActivity: '2023-05-28',
       currentArea: '-'
     },
-  ];
+  ]);
   
-  // Filtrar as equipes com base no filtro selecionado e no termo de busca
+  const [filter, setFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  
   const filteredTeams = useMemo(() => {
     return teams.filter(team => {
-      // Filtragem por categoria (lote, status)
       const matchesFilter = 
         filter === 'all' || 
         (filter === 'lote1' && team.lote === 1) ||
@@ -81,7 +78,6 @@ const Teams = () => {
         (filter === 'active' && team.status === 'ativo') ||
         (filter === 'inactive' && team.status === 'inativo');
       
-      // Filtragem por termo de busca (case insensitive)
       const matchesSearch = 
         searchTerm === '' || 
         team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,29 +87,35 @@ const Teams = () => {
     });
   }, [filter, searchTerm, teams]);
 
+  const handleExcelUpload = (uploadedTeams) => {
+    setTeams(prevTeams => [...prevTeams, ...uploadedTeams]);
+  };
+
   return (
     <>
       <Helmet>
         <title>Equipes | GreenMap Scheduler</title>
       </Helmet>
       
-      <div className="container mx-auto px-4 pt-20 pb-8 animate-fade-up">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Gerenciamento de Equipes</h1>
-          
-          <Button className="mt-4 sm:mt-0">
-            <UserPlus className="h-4 w-4 mr-2" />
-            Nova Equipe
-          </Button>
+      <div className="container mx-auto px-4 pt-20 pb-8">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Equipes</h1>
+          <div className="flex space-x-4">
+            <ExcelUploader onUpload={handleExcelUpload} />
+            <Button>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Nova Equipe
+            </Button>
+          </div>
         </div>
         
-        {/* Filtros */}
-        <TeamFilters filter={filter} setFilter={setFilter} />
+        <TeamFilters 
+          filter={filter} 
+          onFilterChange={setFilter} 
+        />
         
-        {/* Estatísticas */}
         <TeamStats teams={teams} />
         
-        {/* Tabela de equipes */}
         <TeamTable 
           teams={filteredTeams} 
           searchTerm={searchTerm}
