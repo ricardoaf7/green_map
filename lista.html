@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Áreas para Roçagem</title>
+</head>
+<body>
+  <h1>Áreas para Roçagem</h1>
+  <ul id="lista-pontos"></ul>
+
+  <script>
+    // Carregar o arquivo JSON
+    fetch('public/dados.json')
+      .then(response => response.json())
+      .then(data => {
+        const lista = document.getElementById('lista-pontos');
+        data.forEach(ponto => {
+          const item = document.createElement('li');
+          item.textContent = `${ponto.tipo_item} - ${ponto.endereco} (${ponto.metragem_m2} m²)`;
+          lista.appendChild(item);
+        });
+      })
+      .catch(error => console.error('Erro ao carregar os dados:', error));
+  </script>
+</body>
+</html>
