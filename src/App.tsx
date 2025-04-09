@@ -14,6 +14,7 @@ import Areas from "./pages/Areas";
 import Coordinators from "./pages/Coordinators";
 import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
+import Mapa from "./pages/Mapa";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/coordinators" element={<Coordinators />} />
             <Route path="/users" element={<Users />} />
             <Route path="*" element={<NotFound />} />
+            <Route path="/mapa" element={<Mapa />} />
           </Routes>
         </main>
       </BrowserRouter>
