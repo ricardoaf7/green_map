@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapa das Áreas</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mapa das Áreas de Roçagem</h1>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Inicializa o mapa em Londrina
+    const mapa = L.map('map').setView([-23.304421, -51.151373], 13);
+
+    // Adiciona o mapa base do OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).addTo(mapa);
+
+    // Carrega os dados do JSON
+    fetch('public/dados.json')
+      .then(response => response.json())
+      .then(pontos => {
+        pontos.forEach(ponto => {
+          if (ponto.latitude && ponto.longitude) {
+            L.marker([ponto.latitude, ponto.longitude])
+              .addTo(mapa)
+              .bindPopup(`<strong>${ponto.tipo_item}</strong><br>${ponto.endereco}<br>${ponto.metragem_m2} m²`);
+          }
+        });
+      })
+      .catch(error => console.error('Erro ao carregar pontos:', error));
+  </script>
+</body>
+</html>
