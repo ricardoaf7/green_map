@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { UserPlus } from 'lucide-react';
@@ -111,7 +112,7 @@ const Teams = () => {
         
         <TeamFilters 
           filter={filter} 
-          onFilterChange={setFilter} 
+          setFilter={setFilter} 
         />
         
         <TeamStats teams={teams} />
