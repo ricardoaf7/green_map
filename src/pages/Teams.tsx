@@ -111,19 +111,28 @@ const Teams = () => {
       return;
     }
     
-    // Verificar tipos e formatar dados, se necessário
-    const formattedTeams = uploadedTeams.map(team => ({
-      ...team,
-      id: team.id || Date.now() + Math.floor(Math.random() * 1000),
-      lote: Number(team.lote) || 1,
-      members: Number(team.members) || 0,
-      type: (team.type || 'roçagem').toLowerCase(),
-      status: (team.status || 'ativo').toLowerCase(),
-      lastActivity: team.lastActivity || new Date().toISOString().split('T')[0],
-      currentArea: team.currentArea || '-'
-    })) as Team[];
+    // Verificar tipos e formatar dados
+    const formattedTeams = uploadedTeams.map(team => {
+      // Garantir que todos os valores são do tipo correto
+      const statusString = team.status !== undefined ? String(team.status) : 'ativo';
+      const typeString = team.type !== undefined ? String(team.type) : 'roçagem';
+      
+      return {
+        ...team,
+        id: team.id || Date.now() + Math.floor(Math.random() * 1000),
+        lote: Number(team.lote) || 1,
+        members: Number(team.members) || 0,
+        type: typeString.toLowerCase(),
+        status: statusString.toLowerCase(),
+        lastActivity: team.lastActivity || new Date().toISOString().split('T')[0],
+        currentArea: team.currentArea || '-'
+      }
+    }) as Team[];
     
     setTeams(prevTeams => [...prevTeams, ...formattedTeams]);
+    
+    // Mostrar toast de confirmação
+    toast.success(`${formattedTeams.length} equipes adicionadas com sucesso!`);
   };
 
   return (

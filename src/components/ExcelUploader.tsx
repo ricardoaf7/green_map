@@ -59,16 +59,27 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({ onUpload }) => {
           // Verificar se a linha tem dados válidos
           if (!row.length || !row[0]) return null;
           
+          // Converter todos os valores para o tipo correto, garantindo que strings sejam strings
+          const statusValue = row[5];
+          const statusString = statusValue !== undefined && statusValue !== null 
+            ? String(statusValue) 
+            : 'ativo';
+            
+          const typeValue = row[4];
+          const typeString = typeValue !== undefined && typeValue !== null 
+            ? String(typeValue) 
+            : 'roçagem';
+          
           return {
             id: Date.now() + index, // Usar timestamp + índice para ID único
-            name: row[0] || 'Sem nome',
+            name: row[0] ? String(row[0]) : 'Sem nome',
             lote: Number(row[1]) || 1,
-            manager: row[2] || 'Sem responsável',
+            manager: row[2] ? String(row[2]) : 'Sem responsável',
             members: Number(row[3]) || 0,
-            type: (row[4] || 'roçagem').toLowerCase(),
-            status: (row[5] || 'ativo').toLowerCase(),
-            lastActivity: row[6] || new Date().toISOString().split('T')[0],
-            currentArea: row[7] || '-',
+            type: typeString.toLowerCase(),
+            status: statusString.toLowerCase(),
+            lastActivity: row[6] ? String(row[6]) : new Date().toISOString().split('T')[0],
+            currentArea: row[7] ? String(row[7]) : '-',
             latitude: row[8] ? Number(row[8]) : undefined,
             longitude: row[9] ? Number(row[9]) : undefined,
           };
