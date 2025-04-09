@@ -7,6 +7,22 @@ import { ExcelUploader } from '@/components/ExcelUploader';
 import TeamTable from '@/components/teams/TeamTable';
 import TeamStats from '@/components/teams/TeamStats';
 import TeamFilters from '@/components/teams/TeamFilters';
+import { toast } from 'sonner';
+
+// Definição da interface Team para reutilização
+interface Team {
+  id: number;
+  name: string;
+  lote: number;
+  manager: string;
+  members: number;
+  type: string;
+  status: string;
+  lastActivity: string;
+  currentArea: string;
+  latitude?: number;
+  longitude?: number;
+}
 
 const Teams = () => {
   const [teams, setTeams] = useState([
@@ -88,8 +104,26 @@ const Teams = () => {
     });
   }, [filter, searchTerm, teams]);
 
-  const handleExcelUpload = (uploadedTeams) => {
-    setTeams(prevTeams => [...prevTeams, ...uploadedTeams]);
+  const handleExcelUpload = (uploadedTeams: Partial<Team>[]) => {
+    // Validar dados importados
+    if (!uploadedTeams || uploadedTeams.length === 0) {
+      toast.error('Nenhum dado válido na planilha');
+      return;
+    }
+    
+    // Verificar tipos e formatar dados, se necessário
+    const formattedTeams = uploadedTeams.map(team => ({
+      ...team,
+      id: team.id || Date.now() + Math.floor(Math.random() * 1000),
+      lote: Number(team.lote) || 1,
+      members: Number(team.members) || 0,
+      type: (team.type || 'roçagem').toLowerCase(),
+      status: (team.status || 'ativo').toLowerCase(),
+      lastActivity: team.lastActivity || new Date().toISOString().split('T')[0],
+      currentArea: team.currentArea || '-'
+    })) as Team[];
+    
+    setTeams(prevTeams => [...prevTeams, ...formattedTeams]);
   };
 
   return (

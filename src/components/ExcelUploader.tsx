@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import * as XLSX from 'xlsx';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet } from 'lucide-react';
+import { FileSpreadsheet, Upload, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface TeamData {
@@ -23,37 +23,94 @@ interface ExcelUploaderProps {
 
 export const ExcelUploader: React.FC<ExcelUploaderProps> = ({ onUpload }) => {
   const [fileName, setFileName] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     setFileName(file.name);
+    setIsUploading(true);
+    
+    // Mostrar toast de carregamento
+    const loadingToast = toast.loading(`Carregando ${file.name}...`);
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      const data = new Uint8Array(e.target?.result as ArrayBuffer);
-      const workbook = XLSX.read(data, { type: 'array' });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json<TeamData>(worksheet, { header: 1 });
-      
-      // Mapear os dados do Excel para o formato esperado
-      const processedData = jsonData.slice(1).map((row, index) => ({
-        id: index + 1,
-        name: row[0] as string,
-        lote: row[1] as number,
-        manager: row[2] as string,
-        members: row[3] as number,
-        type: row[4] as string,
-        status: row[5] as string,
-        latitude: row[6] as number,
-        longitude: row[7] as number
-      }));
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json<any>(worksheet, { header: 1 });
+        
+        if (jsonData.length <= 1) {
+          toast.dismiss(loadingToast);
+          toast.error('Planilha vazia ou sem dados válidos');
+          setIsUploading(false);
+          return;
+        }
+        
+        // Pegar o cabeçalho (primeira linha)
+        const headers = jsonData[0];
+        
+        // Mapear os dados do Excel para o formato esperado
+        const processedData = jsonData.slice(1).map((row: any[], index) => {
+          // Verificar se a linha tem dados válidos
+          if (!row.length || !row[0]) return null;
+          
+          return {
+            id: Date.now() + index, // Usar timestamp + índice para ID único
+            name: row[0] || 'Sem nome',
+            lote: Number(row[1]) || 1,
+            manager: row[2] || 'Sem responsável',
+            members: Number(row[3]) || 0,
+            type: (row[4] || 'roçagem').toLowerCase(),
+            status: (row[5] || 'ativo').toLowerCase(),
+            lastActivity: row[6] || new Date().toISOString().split('T')[0],
+            currentArea: row[7] || '-',
+            latitude: row[8] ? Number(row[8]) : undefined,
+            longitude: row[9] ? Number(row[9]) : undefined,
+          };
+        }).filter(Boolean); // Remover itens nulos
+        
+        if (processedData.length === 0) {
+          toast.dismiss(loadingToast);
+          toast.error('Nenhum dado válido encontrado na planilha');
+          setIsUploading(false);
+          return;
+        }
 
-      onUpload(processedData);
-      toast.success(`Planilha ${file.name} carregada com sucesso!`);
+        // Informar ao usuário quantas equipes foram carregadas
+        toast.dismiss(loadingToast);
+        toast.success(
+          <div className="flex flex-col">
+            <div className="flex items-center">
+              <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+              <span>Planilha carregada com sucesso!</span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {processedData.length} equipes importadas de {file.name}
+            </p>
+          </div>
+        );
+        
+        onUpload(processedData);
+      } catch (error) {
+        console.error('Erro ao processar planilha:', error);
+        toast.dismiss(loadingToast);
+        toast.error('Erro ao processar a planilha. Verifique o formato.');
+      } finally {
+        setIsUploading(false);
+      }
     };
+    
+    reader.onerror = () => {
+      toast.dismiss(loadingToast);
+      toast.error('Erro ao ler o arquivo');
+      setIsUploading(false);
+    };
+    
     reader.readAsArrayBuffer(file);
   };
 
@@ -65,19 +122,32 @@ export const ExcelUploader: React.FC<ExcelUploaderProps> = ({ onUpload }) => {
         onChange={handleFileUpload} 
         className="hidden" 
         id="excel-upload" 
+        disabled={isUploading}
       />
       <label htmlFor="excel-upload">
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild disabled={isUploading}>
           <span>
-            <FileSpreadsheet className="mr-2 h-4 w-4" />
-            Carregar Planilha Excel
+            {isUploading ? (
+              <>
+                <Upload className="mr-2 h-4 w-4 animate-pulse" />
+                Carregando...
+              </>
+            ) : (
+              <>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                Carregar Planilha Excel
+              </>
+            )}
           </span>
         </Button>
       </label>
-      {fileName && (
-        <span className="text-sm text-muted-foreground">
-          {fileName}
-        </span>
+      {fileName && !isUploading && (
+        <div className="flex items-center">
+          <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
+          <span className="text-sm text-muted-foreground">
+            {fileName}
+          </span>
+        </div>
       )}
     </div>
   );
